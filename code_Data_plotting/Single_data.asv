@@ -1,0 +1,64 @@
+function SS=Single_data(full_path)
+
+A=load(full_path);
+A = struct2cell(A);
+B = A{1};
+full_path='D:\组内\index 2024.10.22\Data processing\GETBUTTER\PPPH\resSIGMAPHI\GPSsigmaphi24001\CHUR24001GPSsigmaphi.mat';
+[~, fileName, ~] = fileparts(full_path);
+last_four = fileName(end-3:end);
+if length(A)>1
+    SS="DIXSG";
+else
+    if strcmp('aphi',last_four)
+        if ismember('L1', fieldnames(B))
+            A=B.L1;
+        else
+            A=B.L1;
+        end
+       
+    end
+    empty_cols =shiyan1(A);
+        simplified = shiyan2(empty_cols);
+        SS = '';
+        for i = 1:numel(simplified)
+            % 将当前单元格的内容转换为字符串
+            if ischar(simplified{i})
+                SS = [SS, simplified{i}, ' '];
+            elseif isnumeric(simplified{i})
+                SS = [SS,'[', num2str(simplified{i}), ']', ','];
+            end
+        end
+end
+
+function empty_cols = shiyan1(A)
+    empty_cols = []; 
+    for col = 1:size(A, 2)
+        if ~all(isnan(A(:, col)))
+            empty_cols = [empty_cols, col];
+        end
+    end
+end
+function simplified = shiyan2(arr)
+    simplified = {};
+    start_idx = 1;
+    end_idx = 1;
+    for i = 2:length(arr)
+        if arr(i) - arr(i-1) ~= 1
+            if end_idx - start_idx >= 2
+                simplified{end+1} = [arr(start_idx), arr(end_idx)];
+            else
+                simplified{end+1} = arr(start_idx:end_idx);
+            end
+            start_idx = i;
+            end_idx = i;
+        else
+            end_idx = i;
+        end
+    end
+    if end_idx - start_idx >= 2
+        simplified{end+1} = [arr(start_idx), arr(end_idx)];
+    else
+        simplified{end+1} = arr(start_idx:end_idx);
+    end
+end
+end

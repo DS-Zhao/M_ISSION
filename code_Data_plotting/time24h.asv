@@ -1,0 +1,56 @@
+% 示例数据数组，每行可能包含一个或多个数值  
+dataArray = [  
+    0, 0, 0;  
+    0, 5, 0;  
+    0, 0, 0;  
+    3, 0, 0;  
+    0, 0, 0;  
+    0, 2, 0;  
+    % ... (更多行)  
+    0, 1, 0;  
+    % 假设数组在这里结束  
+];  
+  
+% 找到第一次和最后一次出现非零数值的行  
+[~, firstValidRow] = find(~isnan(dataArray(:,1)), 1, 'first'); % 检查每行第一个元素  
+[~, lastValidRow] = find(~isnan(dataArray(:,1)), 1, 'last');   % 检查每行第一个元素  
+  
+% 检查是否找到有效行  
+if isempty(firstValidRow) || isempty(lastValidRow)  
+    error('没有找到有效数值的行');  
+end  
+  
+% 总行数  
+totalRows = size(dataArray, 1);  
+  
+% 每行代表的时间间隔（小时）  
+timePerRow = 24 / totalRows;  
+  
+% 计算第一个和最后一个有效行的对应时间（小时）  
+firstTime = firstValidRow * timePerRow;  
+lastTime = lastValidRow * timePerRow;  
+  
+% 打印结果  
+fprintf('第一个有效数值的行: %d, 对应时间: %.2f 小时\n', firstValidRow, firstTime);  
+fprintf('最后一个有效数值的行: %d, 对应时间: %.2f 小时\n', lastValidRow, lastTime);  
+  
+% 假设我们只对有效行之间的数据进行处理  
+% 提取有效行之间的数据（这里简单处理为只取第一个元素作为示例）  
+validData = dataArray(firstValidRow:lastValidRow, 1); % 只取每行第一个元素作为示例  
+  
+% 对应的 x 时间值（只取有效范围，并考虑到时间间隔）  
+xValues = (firstValidRow:lastValidRow)' * timePerRow; % 转置为列向量  
+  
+% 如果需要，可以对 validData 进行进一步处理或分析  
+% ...  
+  
+% 绘制数据  
+figure;  
+plot(xValues, validData, '-o'); % 使用圆圈标记数据点  
+xlabel('时间 (小时)');  
+ylabel('数值');  
+title('数据随时间变化');  
+grid on;  
+  
+% 如果需要，可以添加更多图表元素或自定义轴标签等  
+% ...
