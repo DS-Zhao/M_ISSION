@@ -137,6 +137,7 @@ for msta=1:len-1
         FDIXSG=0;
         for i=1:lev
             [F1.cROT, F2.cROT] = resizeArraysToFit(F1.cROT, F2.cROT);
+            [F1.cROT, d]=resizeArraysToFit(F1.cROT, d);
             DIXSG.(Level{1,i})=(abs(F1.cROT-F2.cROT)/level(i)).^3.*(d/D).^-1;
             DIXSG.(Level{1,i})(DIXSG.(Level{1,i})>1)=1;
             DIXSG.(Level{1,i})(DIXSG.(Level{1,i})<1)=0;

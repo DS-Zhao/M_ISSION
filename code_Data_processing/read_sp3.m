@@ -16,10 +16,15 @@ if len<3
  error('need at least three SP3 files !!!');
 end
 for i=1:len-2
-    pr_obs=[s_ipath '/' list_obs(i).name];
+    GN=list_obs(i+1).name(12:18);
+    filename=strcat(GN,'sp3.mat');
+    % if isfile([s_opath,'/',filename])
+    %     continue;
+    % else   
+    pr_obs=[s_ipath '/' list_obs(i).name];  
     cu_obs=[s_ipath '/' list_obs(i+1).name];
     nx_obs=[s_ipath '/' list_obs(i+2).name];
-    [gpsx1,gpsy1,gpsz1,glox1,gloy1,gloz1,galx1,galy1,galz1,bdsx1,bdsy1,bdsz1]=r_sp3(pr_obs);
+     [gpsx1,gpsy1,gpsz1,glox1,gloy1,gloz1,galx1,galy1,galz1,bdsx1,bdsy1,bdsz1]=r_sp3(pr_obs);
     [gpsx2,gpsy2,gpsz2,glox2,gloy2,gloz2,galx2,galy2,galz2,bdsx2,bdsy2,bdsz2]=r_sp3(cu_obs);
     [gpsx3,gpsy3,gpsz3,glox3,gloy3,gloz3,galx3,galy3,galz3,bdsx3,bdsy3,bdsz3]=r_sp3(nx_obs);
     numgps=min([size(gpsx1,2),size(gpsx2,2),size(gpsx3,2)]);
@@ -103,12 +108,15 @@ for i=1:len-2
         end
     end
     end
-    GN=list_obs(i+1).name(12:18);
-    filename=strcat(GN,'sp3.mat');
+    % GN=list_obs(i+1).name(1:7);
+    % filename=strcat(GN,'sp3.mat');
     if exist(s_opath,'dir')==0
         mkdir(s_opath);
     end
+    if ~isempty(sate.gpsx)
     save([s_opath,'/',filename],'sate','-mat');
+    end
+    % end
 end
 end
 %% ----------------subfunction-----------------
@@ -118,14 +126,17 @@ fid = fopen(path,'r');
 line=fgetl(fid);
 ep=0;%epoch number
 day=line(12:13);
-
+hm=5;
 while 1
     if ~ischar(line), break, end
     line=fgetl(fid);
+    if strcmp(line(1),'#')&& strcmp(line(27:29),'900')
+     hm=15;
+    end
     if strcmp(line(1),'*') && strcmp(line(12:13),day)
         h=str2double(line(15:16));
         m=str2double(line(18:19));
-        ep=h*12+round(m/5)+1;
+        ep=h*(60/hm)+round(m/hm)+1;
         continue;
     end
     if strcmp(line(1),'*') && ~strcmp(line(12:13),day)
@@ -171,18 +182,29 @@ interp_z2=zeros(2880,satenum);
 [x1, x2, x3] = align_dimensions(x1, x2, x3);
 [y1, y2, y3] = align_dimensions(y1, y2, y3);
 [z1, z2, z3] = align_dimensions(z1, z2, z3);
+if length(x2)>96
 x2=[x1(end-3:end,:);x2;x3(1:5,:)];
 y2=[y1(end-3:end,:);y2;y3(1:5,:)];
 z2=[z1(end-3:end,:);z2;z3(1:5,:)];
-m_t=linspace(-40,2880+40,297);
+dpp=9;
+dt1=4;dt2=5;dp=10;
+else
+x2=[x1(end-1:end,:);x2;x3(1:3,:)];
+y2=[y1(end-1:end,:);y2;y3(1:3,:)];
+z2=[z1(end-1:end,:);z2;z3(1:3,:)];
+dt1=2;dt2=3;dp=30;dpp=5;
+end 
+NUMCOL=length(x2)-dpp;
+% m_t=linspace(-40,2880+40,length(x2));
+m_t=linspace(-dt1*dp,2880+dt1*dp,length(x2));
 for i=1:satenum
-    for j=1:288     
-        tt=m_t(j:j+9);
-        x=x2((j:9+j),i)';y=y2((j:9+j),i)';z=z2((j:9+j),i)';
-        t0=linspace(m_t(j+4),m_t(j+5)-1,10);
-        interp_x2((10*j-9):10*j,i)=interp_lag(tt,x,t0)';
-        interp_y2((10*j-9):10*j,i)=interp_lag(tt,y,t0)';
-        interp_z2((10*j-9):10*j,i)=interp_lag(tt,z,t0)';
+    for j=1:NUMCOL     
+        tt=m_t(j:j+dpp);
+        x=x2((j:dpp+j),i)';y=y2((j:dpp+j),i)';z=z2((j:dpp+j),i)';
+        t0=linspace(m_t(j+dt1),m_t(j+dt2)-1,dp);
+        interp_x2((dp*j-(dp-1)):dp*j,i)=interp_lag(tt,x,t0)';
+        interp_y2((dp*j-(dp-1)):dp*j,i)=interp_lag(tt,y,t0)';
+        interp_z2((dp*j-(dp-1)):dp*j,i)=interp_lag(tt,z,t0)';
     end
 end
 end
@@ -209,9 +231,22 @@ function [s1_out, s2_out, s3_out] = align_dimensions(s1, s2, s3)
 %% written by Zhang P. et al., 2024/08
 
     % Get the number of columns for each input matrix (assuming dimension alignment of columns)
-    dims_s1 = size(s1, 2);
-    dims_s2 = size(s2, 2);
-    dims_s3 = size(s3, 2);
+    [ds1,dims_s1] = size(s1);
+    [ds2,dims_s2] = size(s2);
+    [ds3,dims_s3] = size(s3);
+    
+    if any([ds1,ds2,ds3]>96) && any([ds1,ds2,ds3]==96)
+        
+            if ds1>96
+                s1=s1(1:3:288,:);
+            end
+            if ds2>96
+                s2=s2(1:3:288,:);
+            end
+            if ds3>96
+                s3=s3(1:3:288,:);
+            end
+    end
 
     % Find the minimum number of columns
     min_cols = min([dims_s1, dims_s2, dims_s3]);
