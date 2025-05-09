@@ -58,12 +58,25 @@ for i=1:len
         while 1
             line=fgetl(fid);
             if ~ischar(line), break, end      %-------the rinex file is null or end
+            
             if length(line)>79 && strcmp(line(61:80),'RINEX VERSION / TYPE')
                 if strcmp(line(6),'3')==0
+                    file_info = dir(fname);
+                    if file_info.bytes < 100 * 1024  % 100 KB 
+                    fclose('all');
+                    delete(fname);obs=[];
+                    break;
+                    end
                     [inf] = r_rnxheadv2(fname);
+                    if isempty(inf)
+                        obs=[];
+                        break;
+                    end
                     options.dcb = 0;options.system.gps = 1;options.system.glo = 1;options.system.gal = 1;
                     [obs] = r_rnxobsv2(fname,inf,options)   ;
+                    if ~isempty(obs)
                     [obs, coor] = obsToobs2(obs,inf);
+                    end
                     break;
                 else
                     [obs,coor]=read_rnx3(fname);
@@ -77,8 +90,12 @@ for i=1:len
             save(filename1,'obs','coor','-mat');
         end
     end
+    if  ~isempty(coor) && ~isempty(obs)
     Sites_Info.coor(i,:)=coor;
     disp(['-------- [ ',num2str(i),' / ',num2str(len),' ] obs files are read !']);
+    else
+    disp(['-------- [ ',num2str(i),' / ',num2str(len),' ] obs files are delete !']);  
+    end
 end
 % save('Sites_Info.mat','Sites_Info','-mat');
 end
@@ -102,6 +119,11 @@ while 1
         if strcmp(line(6),'3')==0
             break;
         end
+    end
+    if ~strcmp(line(5:6),'30') && strcmp(line(61:67),'INTERVA')
+            fclose(path);
+            delete(path);
+            break;
     end
         %-----get receivers coordinates-----------
         if length(line)>78 && strcmp(line(61:79),'APPROX POSITION XYZ')
@@ -415,7 +437,8 @@ while 1
                 if bdsloc(3)==0 || bdsloc(4)==0 || bdsloc(1)==0 || bdsloc(2)==0
                     bdsmark=0;markf.bds=0;
                 end
-            elseif exist('bdsloc1','var')
+            end
+            if exist('bdsloc1','var')
                 bdsloc1(1,length(bdsloc1)+1:4)=0;
                 if bdsloc1(3)==0 || bdsloc1(4)==0 || bdsloc1(1)==0 || bdsloc1(2)==0
                     bds1mark=0;markf.bds1=0;

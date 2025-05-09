@@ -191,8 +191,8 @@ while ~feof(fid)
 end
 
 alldata = p1s + p2s + l1s + l2s;
+if size(alldata,1)<=2881
 sts(~isnan(alldata)) = 1;
-
 if max>epno
     p1s(epno+1:max,:) = [];
     p2s(epno+1:max,:) = [];
@@ -209,4 +209,9 @@ obs.l2 = l2s;
 obs.ep = eps;
 obs.st = sts;
 fclose('all');
+else
+    fclose('all');
+    delete(f_obs);
+    obs=[];
+end
 end

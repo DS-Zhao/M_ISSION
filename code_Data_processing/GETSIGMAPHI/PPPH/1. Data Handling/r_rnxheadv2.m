@@ -16,6 +16,12 @@ inf.time.last = 86400; %sec
 while 1
     
     tline = fgetl(fid);
+    if ~strcmp(tline(5:6),'30') && strcmp(tline(61:67),'INTERVA')
+            fclose('all');
+            delete(f_obs);
+            inf=[];
+            break;
+    end
     tag  = strtrim(tline(61:end));
     switch tag
         case 'RINEX VERSION / TYPE'
@@ -111,7 +117,7 @@ while 1
             break
     end
 end
-
+if ~isempty(inf)
 if isempty(inf.time.leap)
     [~,mjd] = cal2jul(inf.time.first(1),inf.time.first(2),inf.time.first(3),...
         (inf.time.first(4)*3600 + inf.time.first(5)*60 + inf.time.first(6)));
@@ -127,4 +133,5 @@ end
 inf.time.doy = doy;
 
 fclose('all');
+end
 end
