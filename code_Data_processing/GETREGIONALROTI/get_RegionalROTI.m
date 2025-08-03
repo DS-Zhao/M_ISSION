@@ -24,10 +24,8 @@ for i = 1:length(list_roti)
     if strcmp(rotiname(end-7:end-4), 'ROTI')
         load([rotipath, '\', rotiname]);
         obsPath = fullfile(grandPath, 'raw_OBS', rotiname(5:9), [rotiname(1:9), '.mat']);
-        elePath = fullfile(grandPath, 'ivELE', rotiname(5:9), [rotiname(1:9), '.mat']);
-        if exist(obsPath, 'file') && exist(elePath, 'file')
+        if exist(obsPath, 'file')
             load(obsPath);
-            load(elePath);
 
             fields2 = fieldnames(EA);
             sx = coor(1); sy = coor(2); sz = coor(3);
