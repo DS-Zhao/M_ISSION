@@ -23,7 +23,7 @@ for i = 1:length(list_roti)
     doy=rotiname(5:9);
     if strcmp(rotiname(end-7:end-4), 'ROTI')
         load([rotipath, '\', rotiname]);
-        obsPath = fullfile(grandPath, 'raw_OBS', rotiname(5:9), [rotiname(1:9), '.mat']);
+        obsPath = fullfile(grandPath, 'raw_OBS_cut', rotiname(5:9), [rotiname(1:9), '.mat']);
         if exist(obsPath, 'file')
             load(obsPath);
 
