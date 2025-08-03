@@ -87,8 +87,11 @@ function corrected_data = correct_observations(data, error1, error2, error3, err
     [numErrRows4, numErrCols4] = size(error4);
     
     %Initialize the corrected data
+    data.obs.p1(data.obs.p1==0)=nan;
+    data.obs.p2(data.obs.p2==0)=nan;
+    data.obs.l1(data.obs.l1==0)=nan;
+    data.obs.l2(data.obs.l2==0)=nan;
     corrected_data = data;
-    
     %Traverse each observation matrix and corresponding error matrix
     for row = 1:numObsRows
         for col = 1:numObsCols

@@ -35,7 +35,16 @@ for i=1:len
     if any(strcmp(fields, 'GPSC1W' )) && sys(1)~=0
         if ~(all(all(obs.GPSC1W==0)) || all(all(obs.GPSC2W==0)))
             [GPSROTI]=GPS_ROTI(obs);
+            figure;
+            subplot(4,1,1);
+            plot(obs.GPSL1C);
+            subplot(4,1,2);
+            plot(obs.GPSL2W);
+            subplot(4,1,3);
+            plot(GPSROTI);
             GPSROTI = checkAnomalies(GPSROTI);
+            subplot(4,1,4);
+            plot(GPSROTI);
             if all(all(GPSROTI==0))
                 continue;
             end
@@ -114,17 +123,17 @@ for i=1:len
         end
     elseif any(strcmp(fields, 'GALC1X' ))  && sys(3)~=0
         if ~(all(all(obs.GALC1X==0)) || all(all(obs.GALC5X==0)))
-            [GALXROTI]=GALX_ROTI(obs);
-            GALXROTI = checkAnomalies(GALXROTI);
-            if all(all(GALXROTI==0))
+            [GALROTI]=GALX_ROTI(obs);
+            GALROTI = checkAnomalies(GALROTI);
+            if all(all(GALROTI==0))
                 continue;
             end
             gPath=fileparts(path_obs);
-            if exist([gPath '/resROTI' '/GALXROTI' doy],'dir')==0
-                mkdir([gPath '/resROTI' '/GALXROTI' doy]);
+            if exist([gPath '/resROTI' '/GALROTI' doy],'dir')==0
+                mkdir([gPath '/resROTI' '/GALROTI' doy]);
             end
-            ffPath=[gPath '/resROTI' '/GALXROTI' doy '/' site doy 'GALXROTI.mat'];
-            save(ffPath,'GALXROTI','-mat');
+            ffPath=[gPath '/resROTI' '/GALROTI' doy '/' site doy 'GALROTI.mat'];
+            save(ffPath,'GALROTI','-mat');
             M_ROTI.GALXROTI=GALXROTI;
         end
     end
@@ -330,3 +339,5 @@ for i=1:size2  %i is PRN number
     end
 end
 end
+
+

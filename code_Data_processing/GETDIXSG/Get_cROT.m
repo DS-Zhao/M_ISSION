@@ -13,10 +13,8 @@ stations=Sites_Info.name;
 doys=Sites_Info.doy;
 current_doy=num2str(unique(doys));
 list_obs=dir([path_obs,'/',current_doy,'/*.mat']);
-path_ELE = fullfile(fileparts(path_obs), 'ivELE');
 len=length(list_obs);
 for i=1:len
-    load([path_ELE,'/',current_doy,'/',list_obs(i).name],'-mat');%Load angle data
     load([path_obs,'/',current_doy,'/',list_obs(i).name],'-mat');%Load observation data
     site=list_obs(i).name(1:end-9);
     doy=list_obs(i).name(end-8:end-4);

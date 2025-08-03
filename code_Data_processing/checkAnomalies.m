@@ -1,72 +1,87 @@
 function data = checkAnomalies(data)
-%% Input the data and replace anomalies with NaN
+%% checkAnomalies - Detects anomalies and removes invalid data arcs.
 % INPUT:
-%     data: input data which may contain anomalies
+%     data: A [numRows x numCols] matrix where each column is a time series
+%           which may contain anomalies.
 % OUTPUT:
-%     data: data with anomalies replaced by NaN
+%     data: The cleaned data matrix with anomalies and short arcs replaced by NaN.
+%
+% written by Zhang P. et al., 2024/08
+%% ----------------------- ------------------------------------
 
-%% written by Zhang P. et al., 2024/08
-%% ---------------------------------------------------------------------
+DIFF_THRESHOLD = 2.5;
 
-% Get the size of the data
+MIN_ARC_LENGTH = 10; 
+
+if isempty(data)
+    return;
+end
+
 [numRows, numCols] = size(data);
 
-% Initialize thresholds and window size
-threshold_increase = 2;
-threshold_decrease = 2;
-window_size = 10;
+A_with_nan = [nan(1, numCols); data];
+row_differences = diff(A_with_nan);
+final_result = abs(row_differences);
 
-% Check data column by column
+anomaly_indices = find(final_result > DIFF_THRESHOLD);
+
+if ~isempty(anomaly_indices)
+
+    for i = 1:length(anomaly_indices)
+        [row, col] = ind2sub(size(final_result), anomaly_indices(i));
+        
+        if isnan(data(row, col))
+            continue; 
+        end
+
+        arc_end_row = row;
+        while arc_end_row + 1 <= numRows && ~isnan(data(arc_end_row + 1, col))
+            arc_end_row = arc_end_row + 1;
+        end
+
+        data(row:arc_end_row, col) = NaN;
+    end
+end
+
+
+%% ========================================================================
+%  STEP 2: SHORT ARC REMOVAL
+% =========================================================================
+
+% Now, iterate through the data column by column to find and remove short arcs.
 for col = 1:numCols
-    validIndices = ~isnan(data(:, col));
-
-    if all(~validIndices)
-        continue;
-    end
-
-    processed = false(numRows, 1);
-
-    for i = 1:numRows
-        if processed(i) || isnan(data(i, col))
+    
+    row_idx = 1;
+    while row_idx <= numRows
+        
+        % --- Skip over existing NaNs to find the start of a potential arc ---
+        if isnan(data(row_idx, col))
+            row_idx = row_idx + 1;
             continue;
         end
-
-        % Find the start of a new segment
-        if i == 1||isnan(data(i-1, col))
-            startIdx = i;
-        else
-            startIdx = i - 1;
+        
+        % If we are here, we found the start of an arc
+        arc_start_row = row_idx;
+        
+        % --- Find the end of this arc ---
+        arc_end_row = arc_start_row;
+        while arc_end_row + 1 <= numRows && ~isnan(data(arc_end_row + 1, col))
+            arc_end_row = arc_end_row + 1;
         end
-
-        % Find the end of the segment
-        endIdx = i;
-        while endIdx < numRows && ~isnan(data(endIdx+1, col)) && ...
-               (data(endIdx+1, col) - data(endIdx, col) <= threshold_increase)
-            endIdx = endIdx + 1;
+        
+        % --- Check the arc's length ---
+        arc_length = arc_end_row - arc_start_row + 1;
+        
+        % If the arc is shorter than the minimum required length, remove it
+        if arc_length < MIN_ARC_LENGTH
+            data(arc_start_row:arc_end_row, col) = NaN;
         end
+        
+        % --- Move the main pointer to the position after this arc ---
+        % This is crucial for efficiency and correctness.
+        row_idx = arc_end_row + 1;
+        
+    end % end while loop for rows
+end % end for loop for columns
 
-        % Check if the segment is within the window size
-        if endIdx - startIdx + 1 <= window_size
-            continue;
-        end
-
-        % Check for a decrease within the window size after the increase
-        foundDecrease = false;
-        for j = endIdx:-1:startIdx + 1
-            if data(j, col) - data(j-1, col) < -threshold_decrease
-                foundDecrease = true;
-                break;
-            end
-            if j == startIdx + 1
-                break;
-            end
-        end
-
-        % If a decrease is found, replace the segment with NaN
-        if foundDecrease
-            data(startIdx:endIdx, col) = NaN;
-            processed(startIdx:endIdx) = true;
-        end
-    end
-end
-end
+end % end function

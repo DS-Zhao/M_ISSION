@@ -76,21 +76,19 @@ for i=1:len
         end
     end
     [EA,obs]=cut_obs(sate,sx,sy,sz,obs,lim,sate_mark);
-    path_ELE = fullfile(fileparts(path_obs), 'ivELE',doy); 
-if exist(path_ELE,'dir')==0
-    mkdir(path_ELE);
-end
-    filename1 = fullfile(path_ELE, list_obs(i).name);
-    save(filename1, 'EA', '-mat');
+%     path_ELE = fullfile(fileparts(path_obs), 'ivELE',doy); 
+% if exist(path_ELE,'dir')==0
+%     mkdir(path_ELE);
+% end
+%     filename1 = fullfile(path_ELE, list_obs(i).name);
+%     save(filename1, 'EA', '-mat');
     path_cutobs = fullfile(fileparts(path_obs), 'raw_OBS_cut',doy); 
     if exist(path_cutobs,'dir')==0
     mkdir(path_cutobs); 
     end
     filename2 = fullfile(path_cutobs, list_obs(i).name);
     coor=Coor;
-    save(filename2, 'obs','coor', '-mat');
-    clear sate;
-    
+    save(filename2, 'obs','coor','EA', '-mat');
 end
 end
 %% ----------------subfunction-----------------

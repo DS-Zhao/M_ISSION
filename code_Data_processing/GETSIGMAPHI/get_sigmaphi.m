@@ -60,7 +60,7 @@ function sigmaphi=sigmaphi(data)
 sigmaphi=nan(2880,q);
 for i=1:q
     for m=11:2881
-        sigmaphi(m-6,i)=std(data(m-10:m-1,i),1);
+        sigmaphi(m-1,i)=std(data(m-10:m-1,i),1);
     end
 end
 end

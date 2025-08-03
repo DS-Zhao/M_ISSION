@@ -18,9 +18,9 @@ end
 for i=1:len-2
     GN=list_obs(i+1).name(12:18);
     filename=strcat(GN,'sp3.mat');
-    % if isfile([s_opath,'/',filename])
-    %     continue;
-    % else   
+    if isfile([s_opath,'/',filename])
+        continue;
+    else   
     pr_obs=[s_ipath '/' list_obs(i).name];  
     cu_obs=[s_ipath '/' list_obs(i+1).name];
     nx_obs=[s_ipath '/' list_obs(i+2).name];
@@ -116,7 +116,7 @@ for i=1:len-2
     if ~isempty(sate.gpsx)
     save([s_opath,'/',filename],'sate','-mat');
     end
-    % end
+    end
 end
 end
 %% ----------------subfunction-----------------

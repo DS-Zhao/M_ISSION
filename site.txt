@@ -1,0 +1,1 @@
+#The coordinate file consists of space-separated entries. Each entry must follow this format: a four-character station identifier, followed by its X, Y, and Z coordinates. Multiple entries can be placed on the same line or on separate lines.
