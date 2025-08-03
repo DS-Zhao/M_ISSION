@@ -35,16 +35,7 @@ for i=1:len
     if any(strcmp(fields, 'GPSC1W' )) && sys(1)~=0
         if ~(all(all(obs.GPSC1W==0)) || all(all(obs.GPSC2W==0)))
             [GPSROTI]=GPS_ROTI(obs);
-            figure;
-            subplot(4,1,1);
-            plot(obs.GPSL1C);
-            subplot(4,1,2);
-            plot(obs.GPSL2W);
-            subplot(4,1,3);
-            plot(GPSROTI);
             GPSROTI = checkAnomalies(GPSROTI);
-            subplot(4,1,4);
-            plot(GPSROTI);
             if all(all(GPSROTI==0))
                 continue;
             end

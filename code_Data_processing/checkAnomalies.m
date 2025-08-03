@@ -44,44 +44,34 @@ if ~isempty(anomaly_indices)
 end
 
 
-%% ========================================================================
 %  STEP 2: SHORT ARC REMOVAL
-% =========================================================================
 
-% Now, iterate through the data column by column to find and remove short arcs.
 for col = 1:numCols
     
     row_idx = 1;
     while row_idx <= numRows
-        
-        % --- Skip over existing NaNs to find the start of a potential arc ---
+
         if isnan(data(row_idx, col))
             row_idx = row_idx + 1;
             continue;
         end
-        
-        % If we are here, we found the start of an arc
+
         arc_start_row = row_idx;
-        
-        % --- Find the end of this arc ---
+ 
         arc_end_row = arc_start_row;
         while arc_end_row + 1 <= numRows && ~isnan(data(arc_end_row + 1, col))
             arc_end_row = arc_end_row + 1;
         end
-        
-        % --- Check the arc's length ---
+
         arc_length = arc_end_row - arc_start_row + 1;
-        
-        % If the arc is shorter than the minimum required length, remove it
+
         if arc_length < MIN_ARC_LENGTH
             data(arc_start_row:arc_end_row, col) = NaN;
         end
-        
-        % --- Move the main pointer to the position after this arc ---
-        % This is crucial for efficiency and correctness.
+
         row_idx = arc_end_row + 1;
         
-    end % end while loop for rows
-end % end for loop for columns
+    end 
+end 
 
-end % end function
+end 
